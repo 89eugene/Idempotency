@@ -1,0 +1,58 @@
+#spring:
+#  application:
+#      name: billing-service
+#  datasource:
+#    url: ${DATABASE_URI}
+#    username: ${DATABASE_LOGIN}
+#    password: ${DATABASE_PASSWORD}
+#    driver-class-name: ${DATABASE_DRIVER}
+#  jpa:
+#    database-platform: ${HIBERNATE_DIALOG}
+#    show-sql: ${SHOW_SQL}
+#    generate-ddl: ${JPA_GENERETE_DDL}
+#    hibernate:
+#      ddl-auto: ${JPA_DDL_AUTO}
+
+#local version
+server:
+  port: 8040
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/billing-db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL95Dialect
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+
+kafka:
+  bootstrapAddress: ${BOOTSTRAP_ADDRESS:localhost:29092}
+  topic: ${TOPIC_NAME:order_event}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,metrics
+  metrics:
+    web:
+      server:
+        request:
+          autotime:
+            percentiles: 0.5, 0.95, 0.99, 1.0
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG

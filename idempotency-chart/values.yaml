@@ -1,0 +1,77 @@
+# Default values for streaming-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+namespace: idempotency
+
+images:
+  billingservice:
+    repository: eugene89/billing-service
+    replicaCount: 1
+  notificationservice:
+    repository: eugene89/notification-service
+    replicaCount: 1
+  orderservice:
+    repository: eugene89/idempotency-order-service
+    replicaCount: 1
+  personservice:
+    repository: eugene89/bperson-service
+    replicaCount: 1
+  kafka:
+    repository: wurstmeister/kafka:2.11-2.0.0
+    replicaCount: 1
+  zookeeper:
+    repository: library/zookeeper:3.4.13
+    replicaCount: 1
+
+ingress:
+  hostname: arch.homework
+
+kafka:
+  topicname: "order_event"
+
+
+service:
+  type: NodePort
+  billingservice:
+    port: 8040
+  notificationservice:
+    port: 8030
+  orderservice:
+    port: 8050
+  personservice:
+    port: 8060
+  kafka:
+    port: 9092
+  zookeeper:
+    port: 2181
+
+
+externalPostgresql:
+  targetPort: "5432"
+  personservice:
+    postgresqlUserName: myuser
+    postgresqlPassword: passwd
+    postgresqlDatabase: persdon-db
+    postgresqlHost: "person-postgres"
+    postgresqlPort: "5432"
+  billingservice:
+    postgresqlUserName: myuser
+    postgresqlPassword: passwd
+    postgresqlDatabase: billing-db
+    postgresqlHost: "billing-postgres"
+    postgresqlPort: "5433"
+  orderservice:
+    postgresqlUserName: myuser
+    postgresqlPassword: passwd
+    postgresqlDatabase: order-db
+    postgresqlHost: "order-postgres"
+    postgresqlPort: "5434"
+  notificationservice:
+    postgresqlUserName: myuser
+    postgresqlPassword: passwd
+    postgresqlDatabase: notification-db
+    postgresqlHost: "notification-postgres"
+    postgresqlPort: "5435"
+
+postgres:
+  image: postgres:11

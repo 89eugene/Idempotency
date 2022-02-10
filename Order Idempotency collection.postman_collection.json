@@ -1,0 +1,407 @@
+{
+	"info": {
+		"_postman_id": "c8983297-1f58-4a6e-948a-87f1256a4a66",
+		"name": "Order Idempotency collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "create person",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let requestR = pm.request;\r",
+							"console.log(\"Request\")\r",
+							"console.log(requestR.headers);\r",
+							"console.log(requestR.body);\r",
+							"\r",
+							"let responceJSON = pm.response.json()\r",
+							"pm.collectionVariables.set(\"user-login\", responceJSON[\"login\"])\r",
+							"console.log(\"################################\");\r",
+							"console.log(\"Response\")\r",
+							"console.log(pm.response.headers);\r",
+							"console.log(responceJSON);\r",
+							"pm.test(\"success register first person test\", function() {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"first person\",\r\n    \"login\" : \"firstLogin19\",\r\n    \"firstName\": \"first name\",\r\n    \"lastName\": \"last name\",\r\n    \"email\":\"m@mail.ru\",\r\n    \"phone\":\"3333\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{base-url}}/person/register",
+					"protocol": "http",
+					"host": [
+						"{{base-url}}"
+					],
+					"path": [
+						"person",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "fill money",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"pm.test(\"success fill money\", function() {   \r",
+							"    pm.expect(responseJson.message).to.eql('Операция произведена успешно');\r",
+							"});\r",
+							"let requestR = pm.request;\r",
+							"console.log(\"Request\")\r",
+							"console.log(requestR.headers);\r",
+							"console.log(requestR.body);\r",
+							"console.log(\"################################\");\r",
+							"console.log(\"Response\")\r",
+							"console.log(pm.response.headers);\r",
+							"console.log(responseJson);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"login\": \"{{user-login}}\",\r\n    \"operation\" : \"FILL_UP\",\r\n    \"sum\" : \"500\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{base-url}}/account/operation",
+					"protocol": "http",
+					"host": [
+						"{{base-url}}"
+					],
+					"path": [
+						"account",
+						"operation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order enough money",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"pm.test(\"success create order\", function() {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(responseJson.isPaid).to.eql(true);\r",
+							"    pm.collectionVariables.set(\"order-id\", responseJson[\"id\"])\r",
+							"});\r",
+							"\r",
+							"let requestR = pm.request;\r",
+							"console.log(\"Request\")\r",
+							"console.log(requestR.headers);\r",
+							"console.log(requestR.body);\r",
+							"console.log(\"################################\");\r",
+							"console.log(\"Response\")\r",
+							"console.log(pm.response.headers);\r",
+							"console.log(responseJson);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"login\": \"{{user-login}}\",\r\n    \"product\": \"PIZZA\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{base-url}}/order/createOrder?X-Request-Id=231312312111",
+					"protocol": "http",
+					"host": [
+						"{{base-url}}"
+					],
+					"path": [
+						"order",
+						"createOrder"
+					],
+					"query": [
+						{
+							"key": "X-Request-Id",
+							"value": "231312312111"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Summary",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"pm.test(\"have enough money\", function() {\r",
+							"        pm.response.to.have.status(200); \r",
+							"    pm.expect(responseJson.summary).to.eql(200.0);\r",
+							"});\r",
+							"let requestR = pm.request;\r",
+							"console.log(\"Request\")\r",
+							"console.log(requestR.headers);\r",
+							"console.log(requestR.body);\r",
+							"console.log(\"################################\");\r",
+							"console.log(\"Response\")\r",
+							"console.log(pm.response.headers);\r",
+							"console.log(responseJson);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{base-url}}/account/?login={{user-login}}",
+					"protocol": "http",
+					"host": [
+						"{{base-url}}"
+					],
+					"path": [
+						"account",
+						""
+					],
+					"query": [
+						{
+							"key": "login",
+							"value": "{{user-login}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "repeat create order enough money",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"pm.test(\"success create order\", function() {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(responseJson.isPaid).to.eql(true);\r",
+							"    pm.expect(responseJson.id).to.eql(pm.collectionVariables.get(\"order-id\"));\r",
+							"});\r",
+							"\r",
+							"let requestR = pm.request;\r",
+							"console.log(\"Request\")\r",
+							"console.log(requestR.headers);\r",
+							"console.log(requestR.body);\r",
+							"console.log(\"################################\");\r",
+							"console.log(\"Response\")\r",
+							"console.log(pm.response.headers);\r",
+							"console.log(responseJson);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"login\": \"{{user-login}}\",\r\n    \"product\": \"PIZZA\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{base-url}}/order/createOrder?X-Request-Id=231312312111",
+					"protocol": "http",
+					"host": [
+						"{{base-url}}"
+					],
+					"path": [
+						"order",
+						"createOrder"
+					],
+					"query": [
+						{
+							"key": "X-Request-Id",
+							"value": "231312312111"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Summary",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"pm.test(\"have enough money\", function() {\r",
+							"        pm.response.to.have.status(200); \r",
+							"    pm.expect(responseJson.summary).to.eql(200.0);\r",
+							"});\r",
+							"let requestR = pm.request;\r",
+							"console.log(\"Request\")\r",
+							"console.log(requestR.headers);\r",
+							"console.log(requestR.body);\r",
+							"console.log(\"################################\");\r",
+							"console.log(\"Response\")\r",
+							"console.log(pm.response.headers);\r",
+							"console.log(responseJson);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{base-url}}/account/?login={{user-login}}",
+					"protocol": "http",
+					"host": [
+						"{{base-url}}"
+					],
+					"path": [
+						"account",
+						""
+					],
+					"query": [
+						{
+							"key": "login",
+							"value": "{{user-login}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "billing-url",
+			"value": "127.0.0.1:8040",
+			"type": "default",
+			"disabled": true
+		},
+		{
+			"key": "order-url",
+			"value": "127.0.0.1:8050",
+			"type": "default",
+			"disabled": true
+		},
+		{
+			"key": "person-url",
+			"value": "127.0.0.1:8060",
+			"type": "default",
+			"disabled": true
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "previousUserId",
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "notice-url",
+			"value": "localhost:8030",
+			"type": "default",
+			"disabled": true
+		},
+		{
+			"key": "user-login",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "base-url",
+			"value": "arch.homework",
+			"type": "default"
+		},
+		{
+			"key": "order-id",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

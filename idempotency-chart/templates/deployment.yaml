@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: person-service
+  labels:
+   app: person-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.images.personservice.replicaCount }}
+  selector:
+    matchLabels:
+      app: person-service
+  template:
+    metadata:
+      labels:
+        app: person-service
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.images.personservice.repository }}"
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: personserviceconfig
+            - secretRef:
+                name: personservicesecret
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-service
+  labels:
+    app: billing-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.images.billingservice.replicaCount }}
+  selector:
+    matchLabels:
+      app: billing-service
+  template:
+    metadata:
+      labels:
+        app: billing-service
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.images.billingservice.repository }}"
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: billingconfig
+            - secretRef:
+                name: billingservicesecret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  labels:
+    app: order-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.images.orderservice.replicaCount }}
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+       app: order-service
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.images.orderservice.repository }}"
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: orderconfig
+            - secretRef:
+                name: orderservicesecret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.images.notificationservice.replicaCount }}
+  selector:
+    matchLabels:
+     app: notification-service
+  template:
+    metadata:
+      labels:
+       app: notification-service
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.images.notificationservice.repository }}"
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: notificationconfig
+            - secretRef:
+                name: notificationservicesecret

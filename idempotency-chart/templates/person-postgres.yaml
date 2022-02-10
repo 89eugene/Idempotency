@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: person-postgres
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: person-postgres
+spec:
+  type: NodePort
+  ports:
+   - port: {{ .Values.externalPostgresql.personservice.postgresqlPort }}
+     targetPort: {{ .Values.externalPostgresql.targetPort }}
+  selector:
+    app: person-postgres
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: person-postgres-statefulset
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: "person-postgres"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: person-postgres
+  template:
+    metadata:
+      labels:
+        app: person-postgres
+    spec:
+      containers:
+      - name: person-postgres
+        image: {{ .Values.postgres.image }}
+        ports:
+        - containerPort: {{ .Values.externalPostgresql.targetPort }}
+          name: postgredb
+        env:
+          - name: POSTGRES_DB
+            value: {{ .Values.externalPostgresql.personservice.postgresqlDatabase }}
+          - name: POSTGRES_USER
+            value: {{ .Values.externalPostgresql.personservice.postgresqlUserName }}
+          - name: POSTGRES_PASSWORD
+            value: {{ .Values.externalPostgresql.personservice.postgresqlPassword }}
+        volumeMounts:
+        - name: postgredb
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+  volumeClaimTemplates:
+  - metadata:
+      name: postgredb
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 2G
+
+

@@ -1,0 +1,9 @@
+/.idea/
+/idempotency-chart/.idea/
+/notification-service/.idea/
+/notification-service/target/
+/order-service/target/
+/order-service/.idea/
+
+/person-service/.idea/
+/person-service/target/

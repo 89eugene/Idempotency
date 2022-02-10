@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-postgres
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: order-postgres
+spec:
+  type: NodePort
+  ports:
+   - port: {{ .Values.externalPostgresql.orderservice.postgresqlPort }}
+     targetPort: {{ .Values.externalPostgresql.targetPort }}
+  selector:
+    app: order-postgres
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: order-postgres-statefulset
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: "order-postgres"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-postgres
+  template:
+    metadata:
+      labels:
+        app: order-postgres
+    spec:
+      containers:
+      - name: order-postgres
+        image: {{ .Values.postgres.image }}
+        ports:
+        - containerPort: {{ .Values.externalPostgresql.targetPort }}
+          name: postgredb
+        env:
+          - name: POSTGRES_DB
+            value: {{ .Values.externalPostgresql.orderservice.postgresqlDatabase }}
+          - name: POSTGRES_USER
+            value: {{ .Values.externalPostgresql.orderservice.postgresqlUserName }}
+          - name: POSTGRES_PASSWORD
+            value: {{ .Values.externalPostgresql.orderservice.postgresqlPassword }}
+        volumeMounts:
+        - name: postgredb
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+  volumeClaimTemplates:
+  - metadata:
+      name: postgredb
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 2G
+
+

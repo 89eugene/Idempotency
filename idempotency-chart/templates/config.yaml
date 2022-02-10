@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: personservicesecret
+  namespace: {{ .Values.namespace }}
+type:
+  Opaque
+data:
+  DATABASE_URI: {{ printf "jdbc:postgresql://%s:%s/%s" .Values.externalPostgresql.personservice.postgresqlHost .Values.externalPostgresql.personservice.postgresqlPort .Values.externalPostgresql.personservice.postgresqlDatabase | b64enc | quote }}
+  DATABASE_LOGIN: {{ printf "%s" .Values.externalPostgresql.personservice.postgresqlUserName | b64enc | quote }}
+  DATABASE_PASSWORD: {{ printf "%s" .Values.externalPostgresql.personservice.postgresqlPassword | b64enc | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: billingservicesecret
+  namespace: {{ .Values.namespace }}
+type:
+  Opaque
+data:
+  DATABASE_URI: {{ printf "jdbc:postgresql://%s:%s/%s" .Values.externalPostgresql.billingservice.postgresqlHost .Values.externalPostgresql.billingservice.postgresqlPort .Values.externalPostgresql.billingservice.postgresqlDatabase | b64enc | quote }}
+  DATABASE_LOGIN: {{ printf "%s" .Values.externalPostgresql.billingservice.postgresqlUserName | b64enc | quote }}
+  DATABASE_PASSWORD: {{ printf "%s" .Values.externalPostgresql.billingservice.postgresqlPassword | b64enc | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: orderservicesecret
+  namespace: {{ .Values.namespace }}
+type:
+  Opaque
+data:
+  DATABASE_URI: {{ printf "jdbc:postgresql://%s:%s/%s" .Values.externalPostgresql.orderservice.postgresqlHost .Values.externalPostgresql.orderservice.postgresqlPort .Values.externalPostgresql.orderservice.postgresqlDatabase | b64enc | quote }}
+  DATABASE_LOGIN: {{ printf "%s" .Values.externalPostgresql.orderservice.postgresqlUserName | b64enc | quote }}
+  DATABASE_PASSWORD: {{ printf "%s" .Values.externalPostgresql.orderservice.postgresqlPassword | b64enc | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: notificationservicesecret
+  namespace: {{ .Values.namespace }}
+type:
+  Opaque
+data:
+  DATABASE_URI: {{ printf "jdbc:postgresql://%s:%s/%s" .Values.externalPostgresql.notificationservice.postgresqlHost .Values.externalPostgresql.notificationservice.postgresqlPort .Values.externalPostgresql.notificationservice.postgresqlDatabase | b64enc | quote }}
+  DATABASE_LOGIN: {{ printf "%s" .Values.externalPostgresql.notificationservice.postgresqlUserName | b64enc | quote }}
+  DATABASE_PASSWORD: {{ printf "%s" .Values.externalPostgresql.notificationservice.postgresqlPassword | b64enc | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: personserviceconfig
+  namespace: {{ .Values.namespace }}
+data:
+  DATABASE_DRIVER: "org.postgresql.Driver"
+  HIBERNATE_DIALOG: "org.hibernate.dialect.PostgreSQL95Dialect"
+  JPA_DDL_AUTO: "update"
+  JPA_GENERETE_DDL: "true"
+  SHOW_SQL: "true"
+  BILLING_URL: "http://billing-service:{{ .Values.service.billingservice.port }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orderconfig
+  namespace: {{ .Values.namespace }}
+data:
+  DATABASE_DRIVER: "org.postgresql.Driver"
+  HIBERNATE_DIALOG: "org.hibernate.dialect.PostgreSQL95Dialect"
+  JPA_DDL_AUTO: "update"
+  JPA_GENERETE_DDL: "true"
+  SHOW_SQL: "true"
+  BILLING_URL: "http://billing-service:{{ .Values.service.billingservice.port }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: billingconfig
+  namespace: {{ .Values.namespace }}
+data:
+  DATABASE_DRIVER: "org.postgresql.Driver"
+  HIBERNATE_DIALOG: "org.hibernate.dialect.PostgreSQL95Dialect"
+  JPA_DDL_AUTO: "update"
+  JPA_GENERETE_DDL: "true"
+  SHOW_SQL: "true"
+  BOOTSTRAP_ADDRESS: "kafka:{{ .Values.service.kafka.port }}"
+  TOPIC_NAME: {{ .Values.kafka.topicname }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notificationconfig
+  namespace: {{ .Values.namespace }}
+data:
+  DATABASE_DRIVER: "org.postgresql.Driver"
+  HIBERNATE_DIALOG: "org.hibernate.dialect.PostgreSQL95Dialect"
+  JPA_DDL_AUTO: "update"
+  JPA_GENERETE_DDL: "true"
+  SHOW_SQL: "true"
+  BOOTSTRAP_ADDRESS: "kafka:{{ .Values.service.kafka.port }}"
+  TOPIC_NAME: {{ .Values.kafka.topicname }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafkaconfig
+  namespace: {{ .Values.namespace }}
+data:
+  KAFKA_BROKER_ID: "1"
+  KAFKA_ZOOKEEPER_CONNECT: "zookeper-service:{{ .Values.service.zookeeper.port }}"
+  KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:{{ .Values.service.kafka.port }},PLAINTEXT_HOST://localhost:{{ .Values.service.kafka.port }}"
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+  KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zookeeperconfig
+  namespace: {{ .Values.namespace }}
+data:
+  ZOOKEEPER_CLIENT_PORT: "{{ .Values.service.zookeeper.port }}"
+  ZOOKEEPER_TICK_TIME: "2000"
+
+
